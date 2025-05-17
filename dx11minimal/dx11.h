@@ -237,7 +237,33 @@ namespace Textures
 			}
 		}
 	}
+	void Depth1()
+	{
+		tdesc.Width = width;
+		tdesc.Height = height;
+		tdesc.MipLevels = 1;
+		tdesc.ArraySize = 1;
+		tdesc.Format = DXGI_FORMAT_R32_TYPELESS;
+		tdesc.SampleDesc.Count = 1;
+		tdesc.SampleDesc.Quality = 0;
+		tdesc.Usage = D3D11_USAGE_DEFAULT;
+		tdesc.BindFlags = D3D10_BIND_DEPTH_STENCIL | D3D10_BIND_SHADER_RESOURCE;
+		tdesc.CPUAccessFlags = 0;
+		tdesc.MiscFlags = 0;
 
+		// Create the depth stencil view desc
+		D3D10_DEPTH_STENCIL_VIEW_DESC descDSV;
+		descDSV.Format = tdesc.Format;
+		descDSV.ViewDimension = D3D10_DSV_DIMENSION_TEXTURE2D;
+		descDSV.Texture2D.MipSlice = 0;
+
+		//create shader resource view desc
+		D3D10_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		srvDesc.ViewDimension = D3D10_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = tdesc.MipLevels;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+	}
 	void Depth(int i)
 	{
 		auto cTex = Texture[i];
@@ -868,7 +894,7 @@ void Dx11Init()
 	//rt1
 	Textures::Create(1, Textures::tType::flat, Textures::tFormat::u8, XMFLOAT2(width, height), false, true);
 	//rt2
-	Textures::Create(2, Textures::tType::flat, Textures::tFormat::s16, XMFLOAT2(width, height), false, true);
+	Textures::Create(2, Textures::tType::flat, Textures::tFormat::u8, XMFLOAT2(width, height), false, true);
 }
 
 
@@ -951,21 +977,21 @@ namespace Camera
 		ConstBuf::camera.view[0] = XMMatrixTranspose(XMMatrixLookAtLH(Eye, At, Up));
 		ConstBuf::camera.proj[0] = XMMatrixTranspose(XMMatrixPerspectiveFovLH(DegreesToRadians(angle), iaspect, 0.01f, 100.0f));
 
+		float lt = timer::frameBeginTime * 0.001;
+		float langle = 70;
+		float la = 3.5;
+		XMVECTOR lEye = XMVectorSet(0, 3.5, 0, 0);
+		XMVECTOR lAt = XMVectorSet(0, 0, 0, 0.0f);
+		XMVECTOR lUp = XMVectorSet(0, 0, 1, 0.0f);
+		float near_plane = 1.0f;
+		float far_plane = 10.5f;
+		ConstBuf::camera.world[1] = XMMatrixIdentity();
+		ConstBuf::camera.view[1] = XMMatrixTranspose(XMMatrixLookAtLH(lEye, lAt, lUp));
+		ConstBuf::camera.proj[1] = XMMatrixTranspose(XMMatrixOrthographicLH(10, 5, near_plane, far_plane));
+
 		ConstBuf::UpdateCamera();
 		ConstBuf::ConstToVertex(3);
 		ConstBuf::ConstToPixel(3);
-		// Настройка камеры для источника света (например, directional light)
-		XMVECTOR lightDir = XMVectorSet(-0.5f, -1.0f, -0.3f, 0.0f); // направление света
-		XMVECTOR lightTarget = XMVectorZero();                      // куда светим
-		XMVECTOR lightPos = XMVectorAdd(lightTarget, XMVectorScale(XMVector3Normalize(lightDir), -20.0f)); // "камера" света
-		XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-		// Ортографическая проекция (т.к. directional light, не point)
-		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, lightTarget, lightUp);
-		XMMATRIX lightProj = XMMatrixOrthographicLH(20.0f, 20.0f, 0.01f, 100.0f);
-
-		ConstBuf::camera.view[1] = XMMatrixTranspose(lightView);
-		ConstBuf::camera.proj[1] = XMMatrixTranspose(lightProj);
 	}
 }
 void mainLoop()
@@ -975,12 +1001,12 @@ void mainLoop()
 	InputAssembler::IA(InputAssembler::topology::triList);
 	Blend::Blending(Blend::blendmode::alpha, Blend::blendop::add);
 
-	Textures::RenderTarget(2, 0);                  
+	Textures::RenderTarget(1, 0);                  
 	Draw::Clear({ 0,0,0,0 });
 	Draw::ClearDepth();
 
 	Depth::Depth(Depth::depthmode::on);
-	Rasterizer::Cull(Rasterizer::cullmode::off);
+	Rasterizer::Cull(Rasterizer::cullmode::front);
 
 	Shaders::vShader(2);                            
 	Shaders::pShader(2);                            
@@ -997,7 +1023,27 @@ void mainLoop()
 
 	Draw::NullDrawer(count * 6, 15);           
 	
-	Textures::RenderTarget(0, 0);                  
+
+	Textures::TextureToShader(1, 0, both);
+
+	context->PSSetShaderResources(0, 1, &Textures::Texture[2].TextureResView);
+	Sampler::Sampler(targetshader::pixel, 0, Sampler::filter::linear, Sampler::addr::clamp, Sampler::addr::clamp);
+	Textures::RenderTarget(0, 0);
+	Draw::Clear({ 0,0,0,0 });
+	Draw::ClearDepth();
+
+	Depth::Depth(Depth::depthmode::on);
+	Rasterizer::Cull(Rasterizer::cullmode::off);
+
+	Shaders::vShader(0);
+	Shaders::pShader(0);
+
+	Draw::NullDrawer(count * 6, 15);
+
+
+
+	
+	/*Textures::RenderTarget(0, 0);
 	Draw::Clear({ 0,0,0,0 });
 
 	Depth::Depth(Depth::depthmode::off);
@@ -1011,6 +1057,6 @@ void mainLoop()
 	Shaders::pShader(1);                        
 
 	Draw::NullDrawer(6, 1);            
-	
+	*/
 	Draw::Present();                              
 }

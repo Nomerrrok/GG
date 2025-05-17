@@ -3,6 +3,7 @@ cbuffer global : register(b5)
     float4 gConst[32];
 };
 
+
 cbuffer frame : register(b4)
 {
     float4 time;
@@ -89,6 +90,7 @@ float3 cubeToSphere(float3 p)
 {
     return normalize(p);
 }
+
 float3 calcGeom(float2 uv, int faceID)
 {
     float2 p = uv * 2.0 - 1.0;
@@ -163,7 +165,7 @@ VS_OUTPUT VS(uint vID : SV_VertexID, uint iID : SV_InstanceID)
     pos.y = pos.y + 5;
     pos.x = pos.x - t * 3;
     pos.y = pos.y - s * 2.5;
-    pos *= 0.35f;
+    pos *= 0.35;
     float3 albedo;
     float metallic;
     float roughness;
@@ -215,7 +217,7 @@ VS_OUTPUT VS(uint vID : SV_VertexID, uint iID : SV_InstanceID)
         metallic = 0.5;
         roughness = 0.5;
     }
-
+    
     output.wpos = float4(pos, 1.0);
     output.vpos = mul(float4(pos, 1.0), view[0]);
     output.pos = mul(float4(pos, 1.0), mul(view[0], proj[0]));

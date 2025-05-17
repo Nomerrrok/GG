@@ -167,6 +167,9 @@ cbuffer global : register(b5)
     float4 gConst[32];
 };
 
+Texture2D shadowMap : register(t0);
+SamplerState samp : register(s0);
+
 cbuffer frame : register(b4)
 {
     float4 time;
@@ -314,6 +317,7 @@ float3 env(float3 v)
     a = pow(a, 24) * 10;
     a *= saturate(-v.y);
     a += saturate(1 - 2 * length(v.xz)) * saturate(v.y) * 44;
+
     return float3(a, a, a);
 }
 
@@ -489,7 +493,9 @@ float4 PS(VS_OUTPUT input) : SV_Target
 
     finalColor = ACESFilm(finalColor);
     finalColor = pow(finalColor, 1.0 / 2.2);
+    float4 gg = float4(shadowMap.SampleLevel(samp, input.uv, 0).xyz, 1);
     return float4(finalColor, 1.0);
+ 
     //return (input.vnorm/2+.5);
 }
 
