@@ -9,8 +9,6 @@ struct VS_OUTPUT
 
 float4 PS(VS_OUTPUT input) : SV_Target
 {
-    float depth = shadowMap.Sample(samp, input.uv).r;
+    return float4(shadowMap.SampleLevel(samp, input.uv,0).rgb,1);
 
-// Визуализируем глубину в оттенках серого
-return float4(depth, depth, depth, 1.0);
 }

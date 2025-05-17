@@ -3,11 +3,14 @@
 struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
-    float2 uv : TEXCOORD0;
+    float4 vpos : POSITION0;
+    float4 wpos : POSITION1;
+    float4 lpos : TEXCOORD0;
+    float3 normal : NORMAL;
 };
 
 float4 PS(VS_OUTPUT input) : SV_Target
 {
-
-    return float4(0,0,0,1);
+    float depth = input.pos.y;
+    return float4(depth, depth, depth,1);
 }

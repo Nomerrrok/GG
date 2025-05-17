@@ -39,12 +39,15 @@
     <ClInclude Include="VSW.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="PSS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VSS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dx11minimal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SPS.h">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

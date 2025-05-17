@@ -1,3 +1,8 @@
+cbuffer global : register(b5)
+{
+    float4 gConst[32];
+};
+
 cbuffer camera : register(b3)
 {
     float4x4 world[2];
@@ -27,7 +32,10 @@ cbuffer objParams : register(b0)
 struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
-    float2 uv : TEXCOORD0;
+    float4 vpos : POSITION0;
+    float4 wpos : POSITION1;
+    float4 lpos : TEXCOORD0;
+    float3 normal : NORMAL;
 };
 
 float3 cubeToSphere(float3 p)
@@ -55,7 +63,7 @@ float3 rotY(float3 pos, float a)
     return mul(pos, m);
 }
 
-float3 calcGeom(float2 uv, int faceID, float time)
+float3 calcGeom(float2 uv, int faceID)
 {
     float2 p = uv * 2.0 - 1.0;
     float3 cubePos;
@@ -90,14 +98,16 @@ VS_OUTPUT VS(uint vID : SV_VertexID, uint iID : SV_InstanceID)
     int px = localID % (int)gx;
     int py = localID / (int)gx;
     float2 uv = float2(px + 0.5 + p.x * 0.5, py + 0.5 + p.y * 0.5) / float2(gx, gy);
-    float3 pos = calcGeom(uv, faceID, time.x);
-
-    float4 worldPos = mul(float4(pos, 1.0), model);
-    float4 lightSpacePos = mul(worldPos, mul(view[1], proj[1]));
-    float2 projUV = lightSpacePos.xy / lightSpacePos.w * 0.5 + 0.5;
-
-    output.uv = projUV;
-    output.pos = lightSpacePos;
-
+    float3 pos = calcGeom(uv, faceID);
+    int t = iID % 5 + 1;
+    int s = (iID - t + 1) % 3 + 1;
+    pos.x = pos.x + 9;
+    pos.y = pos.y + 5;
+    pos.x = pos.x - t * 3;
+    pos.y = pos.y - s * 2.5;
+    pos *= 0.35;
+    output.wpos = float4(pos, 1.0);
+    output.vpos = mul(float4(pos, 1.0), view[1]);
+    output.pos = mul(float4(pos, 1.0), mul(view[1], proj[1]));
     return output;
 }
