@@ -11,6 +11,5 @@ struct VS_OUTPUT
 
 float4 PS(VS_OUTPUT input) : SV_Target
 {
-    float depth = input.pos.y;
-    return float4(depth, depth, depth,1);
+    return 0;
 }

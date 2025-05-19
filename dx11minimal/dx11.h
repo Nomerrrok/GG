@@ -1009,7 +1009,7 @@ void mainLoop()
 	Rasterizer::Cull(Rasterizer::cullmode::front);
 
 	Shaders::vShader(2);                            
-	Shaders::pShader(2);                            
+	context->PSSetShader(nullptr, nullptr, 0);
 
 	int grid = 8;
 	int count = grid * grid;
@@ -1024,9 +1024,8 @@ void mainLoop()
 	Draw::NullDrawer(count * 6, 15);           
 	
 
-	Textures::TextureToShader(1, 0, both);
 
-	context->PSSetShaderResources(0, 1, &Textures::Texture[2].TextureResView);
+	context->PSSetShaderResources(0, 1, &Textures::Texture[1].DepthResView);
 	Sampler::Sampler(targetshader::pixel, 0, Sampler::filter::linear, Sampler::addr::clamp, Sampler::addr::clamp);
 	Textures::RenderTarget(0, 0);
 	Draw::Clear({ 0,0,0,0 });
@@ -1040,23 +1039,21 @@ void mainLoop()
 
 	Draw::NullDrawer(count * 6, 15);
 
-
-
+             
 	
-	/*Textures::RenderTarget(0, 0);
+	Draw::Present();                              
+}
+/*
+	Textures::RenderTarget(2, 0);
 	Draw::Clear({ 0,0,0,0 });
 
 	Depth::Depth(Depth::depthmode::off);
 	Rasterizer::Cull(Rasterizer::cullmode::off);
 	Blend::Blending(Blend::blendmode::off, Blend::blendop::add);
 
-	context->PSSetShaderResources(0, 1, &Textures::Texture[2].TextureResView);  
+	context->PSSetShaderResources(0, 1, &Textures::Texture[1].DepthResView);
 	Sampler::Sampler(targetshader::pixel, 0, Sampler::filter::linear, Sampler::addr::clamp, Sampler::addr::clamp);
 
-	Shaders::vShader(1);                          
-	Shaders::pShader(1);                        
-
-	Draw::NullDrawer(6, 1);            
-	*/
-	Draw::Present();                              
-}
+	Shaders::vShader(1);
+	Shaders::pShader(1);
+*/
