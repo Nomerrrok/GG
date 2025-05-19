@@ -167,8 +167,6 @@ cbuffer global : register(b5)
     float4 gConst[32];
 };
 
-Texture2D shadowMap : register(t0);
-SamplerState samp : register(s0);
 
 cbuffer frame : register(b4)
 {
@@ -256,7 +254,6 @@ float3 getcolor(float2 uv)
 }
 
 //normal functions
-//both function are modified version of https://www.shadertoy.com/view/XtV3z3
 float lum(float2 uv) {
     float3 rgb = getcolor(uv);
     return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
@@ -493,7 +490,6 @@ float4 PS(VS_OUTPUT input) : SV_Target
 
     finalColor = ACESFilm(finalColor);
     finalColor = pow(finalColor, 1.0 / 2.2);
-    float4 gg = float4(shadowMap.SampleLevel(samp, input.uv, 0).xyz, 1);
     return float4(finalColor, 1.0);
  
     //return (input.vnorm/2+.5);
