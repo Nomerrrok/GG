@@ -980,7 +980,7 @@ namespace Camera
 		float lt = timer::frameBeginTime * 0.001;
 		float langle = 70;
 		float la = 3.5;
-		XMVECTOR lEye = XMVectorSet(0, 3.5, 0, 0);
+		XMVECTOR lEye = XMVectorSet(0, 3.5, 2, 0);
 		XMVECTOR lAt = XMVectorSet(0, 0, 0, 0.0f);
 		XMVECTOR lUp = XMVectorSet(0, 0, 1, 0.0f);
 		float near_plane = 1.0f;
@@ -1001,14 +1001,14 @@ void mainLoop()
 	InputAssembler::IA(InputAssembler::topology::triList);
 	Blend::Blending(Blend::blendmode::alpha, Blend::blendop::add);
 
-	Textures::RenderTarget(1, 0);                  
+	Textures::RenderTarget(1, 0);
 	Draw::Clear({ 0,0,0,0 });
 	Draw::ClearDepth();
 
 	Depth::Depth(Depth::depthmode::on);
 	Rasterizer::Cull(Rasterizer::cullmode::front);
 
-	Shaders::vShader(2);                            
+	Shaders::vShader(2);
 	context->PSSetShader(nullptr, nullptr, 0);
 
 	int grid = 8;
@@ -1016,32 +1016,31 @@ void mainLoop()
 	ConstBuf::ConstToVertex(4);
 	ConstBuf::ConstToPixel(4);
 
-	Camera::Camera();                              
+	Camera::Camera();
 
 	ConstBuf::drawerV[0] = grid;
 	ConstBuf::drawerV[1] = grid;
 
-	Draw::NullDrawer(count * 6, 15);           
-	
+	Draw::NullDrawer(count * 6, 15);
 
 
-	context->PSSetShaderResources(0, 1, &Textures::Texture[1].DepthResView);
-	Sampler::Sampler(targetshader::pixel, 0, Sampler::filter::linear, Sampler::addr::clamp, Sampler::addr::clamp);
-	Textures::RenderTarget(0, 0);
-	Draw::Clear({ 0,0,0,0 });
-	Draw::ClearDepth();
+
+	Textures::RenderTarget(0, 0);      
+	Draw::Clear({ 0, 0, 0, 0 });       
+	Draw::ClearDepth();                
 
 	Depth::Depth(Depth::depthmode::on);
 	Rasterizer::Cull(Rasterizer::cullmode::off);
 
-	Shaders::vShader(0);
-	Shaders::pShader(0);
+	Sampler::Sampler(targetshader::pixel, 0, Sampler::filter::linear, Sampler::addr::clamp, Sampler::addr::clamp);
+	context->PSSetShaderResources(0, 1, &Textures::Texture[1].DepthResView);  // Связываем теневую карту
 
-	Draw::NullDrawer(count * 6, 15);
+	Shaders::vShader(1);
+	Shaders::pShader(1);
 
-             
-	
-	Draw::Present();                              
+	Draw::NullDrawer(1, 1);  
+
+	Draw::Present();
 }
 /*
 	Textures::RenderTarget(2, 0);
